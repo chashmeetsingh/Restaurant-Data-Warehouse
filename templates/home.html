@@ -1,28 +1,209 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Flask Tutorial</title>
+<head>
+  <meta charset="utf-8">
+  <title>DW Reservation System</title>
 
-    <link rel="stylesheet" href="{{ url_for('static',    filename='css/materialize.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',    filename='css/materialize.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',    filename='css/jquery.terminal.min.css') }}">
 
-  </head>
-  <body>
+  <style>
+    .row {
+      display: flex; /* equal height of the children */
+    }
+  </style>
 
-    <div class="navbar-fixed">
-      <nav>
-        <div class="nav-wrapper">
-          <a href="#!" class="brand-logo">Logo</a>
-          <ul class="right hide-on-med-and-down">
-            <li><a href="sass.html">Sass</a></li>
-            <li><a href="badges.html">Components</a></li>
-          </ul>
-        </div>
-      </nav>
+</head>
+<body>
+
+<div class="navbar-fixed">
+  <nav>
+    <div class="container">
+      <div class="nav-wrapper">
+        <a href="{{ url_for('home') }}" class="brand-logo">DW Reservation System</a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="{{ url_for('about') }}">About</a></li>
+        </ul>
+      </div>
     </div>
+  </nav>
+</div>
+
+<div class="container z-depth-5" style="margin-top: 20px;">
+  <div id="terminal"></div>
+</div>
+
+<div class="container" style="margin-top: 20px;">
+  <blockquote class="center-align">DATA_WAREHOUSE</blockquote><br/>
+  <div class="row">
+    <div class="col m6">
+      <h6 class="center-align">DW_FACT</h6>
+      <table class="striped centered">
+        <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+          <td>gid</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>rid</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>created_at</td>
+          <td>date</td>
+        </tr>
+        <tr>
+          <td>reserve_id</td>
+          <td>int</td>
+        </tr>
+        <tr>
+          <td>points</td>
+          <td>int</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col m6">
+      <h6 class="center-align">DIM_GUEST</h6>
+      <table class="striped centered">
+        <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+          <td>gid</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>name</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>phone</td>
+          <td>varchar</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col m6">
+      <h6 class="center-align">DIM_RESTAURANT</h6>
+      <table class="striped centered">
+        <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+          <td>rid</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>genre</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>region</td>
+          <td>varchar</td>
+        </tr>
+        <tr>
+          <td>name</td>
+          <td>varchar</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col m6">
+      <h6 class="center-align">DIM_RESERVATION</h6>
+      <table class="striped centered">
+        <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>res_id</td>
+          <td>int</td>
+        </tr>
+        <tr>
+          <td>guest_count</td>
+          <td>int</td>
+        </tr>
+        <tr>
+          <td>amount_spent</td>
+          <td>int</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="margin-top: 50px; margin-bottom: 50px;">
+  <table class="striped centered">
+    <tbody id="data"></tbody>
+  </table>
+</div>
 
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.terminal.min.js') }}"></script>
 
-  </body>
+<script>
+  $(function($, undefined) {
+    $('#terminal').terminal(function(command) {
+      if (command !== '') {
+        this.echo('');
+        $.ajax({
+          type: "GET",
+          url: "/execute",
+          data: {'query': command},
+          cache: false,
+          success: function(data){
+            $('#data').html('');
+            var newData = JSON.parse(data);
+            // alert(newData.length);
+            for(var i = 0; i < newData.length; i++) {
+              var res = "<tr>";
+              for(var key in newData[i]) {
+                res += "<td>" + key + ": " + newData[i][key] + "</td>";
+              }
+              res += "</tr>";
+              $('#data').append(res);
+            }
+          }
+        });
+      } else {
+        this.echo('');
+      }
+    }, {
+      greetings: 'DB Interaction Layer',
+      name: 'js_demo',
+      height: 200,
+      prompt: 'console> '
+    });
+  });
+</script>
+
+<script>
+
+</script>
+
+</body>
 </html>

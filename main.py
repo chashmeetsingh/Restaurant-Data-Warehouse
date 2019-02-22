@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import mysql.connector
 import pymongo
-from bson import ObjectId
+import json
+import dateutil.parser
 
 app = Flask(__name__)
 
@@ -15,17 +16,9 @@ mysqlConnection = mysql.connector.connect(
 )
 sdb1Cursor = mysqlConnection.cursor()
 
-
-# reservationsSDB1 = []
-# guestsSDB1 = []
-# reservationsSDB1 = []
-
 # SDB 2 Connection
 mongoClient = pymongo.MongoClient("mongodb://localhost:27017/")
 sdb2 = mongoClient["sdb2"]
-# guestCollection = []
-# restaurantCollection = []
-# reservationCollection = []
 
 # Data Warehouse Connection
 dwConnection = mysql.connector.connect(
@@ -152,6 +145,39 @@ def about():
 @app.route("/")
 def visualize():
     return render_template("home.html")
+
+@app.route("/execute")
+def execute():
+    query = request.args.get('query')
+    print(query)
+    try:
+        dwCursor.execute(query)
+    except:
+        return "Invalid query"
+
+    cursorData = dwCursor.fetchall()
+    data = []
+    for d in cursorData:
+        if "dw_fact" in query:
+            if "*" in query:
+                data.append({
+                    "gid": d[0],
+                    "rid": d[1],
+                    "created_at": d[2].strftime('%d-%b-%Y'),
+                    "reserve_id": d[3],
+                    "points": d[4]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
+
+
+    return json.dumps(data)
 
 if __name__ == "__main__":
     app.run(debug=True)
