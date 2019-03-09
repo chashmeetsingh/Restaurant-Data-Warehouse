@@ -48,7 +48,7 @@ fake = Faker()
 guestData = []
 
 for i in range(500):
-    guestData.append((fake.name(), fake.phone_number(), fake.pyint()))
+    guestData.append((fake.name(), fake.phone_number(), 0))
 
 # print(guestData)
 
@@ -72,7 +72,7 @@ regions = ["Ajax" ,"Halton" ,"Peterborough" ,"Atikokan" ,"Halton Hills" ,"Picker
 # print(len(regions))
 restaurantData = []
 
-for i in range(1000):
+for i in range(100):
     restaurantData.append((random.choice(genres), regions[random.randint(0, 99)], fake.company()))
 
 sql = "INSERT INTO restaurant (genre, region, name) VALUES (%s, %s, %s)"
@@ -92,8 +92,8 @@ restaurants = mycursor.fetchall()
 
 reservationsData = []
 
-for i in range(20000):
-    reservationsData.append((random.randint(1, 100), random.randint(1, 100), fake.pyint(), fake.date_time_between(start_date='-4y', end_date='now', tzinfo=None), random.randint(1,10)))
+for i in range(10000):
+    reservationsData.append((random.randint(1, 500), random.randint(1, 100), fake.pyint() / 100, fake.date_time_between(start_date='-2y', end_date='now', tzinfo=None), random.randint(1,10)))
 
 sql = "INSERT INTO reservations (gid, rid, amt_spent, date, guest_count) VALUES (%s, %s, %s, %s, %s)"
 
@@ -109,3 +109,16 @@ reservations = mycursor.fetchall()
 
 # for reservation in reservations:
 #   print(reservation)
+
+for guest in guests:
+    sql = "Select * from reservations where gid = " + str(guest[0])
+    mycursor.execute(sql)
+    reservations_made_by_guest = mycursor.fetchall()
+
+    money_spent = 0
+    for reservation in reservations_made_by_guest:
+        money_spent += reservation[2]
+
+    sql = "Update guest set points = " + str(money_spent) + " where gid = " + str(guest[0])
+    mycursor.execute(sql)
+    mydb.commit()

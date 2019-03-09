@@ -18,7 +18,7 @@ fake = Faker()
 guestData = []
 
 for i in range(500):
-    guestData.append({ "name" : fake.name(), "phone_number" : fake.phone_number(), "points_earned" : fake.pyint()})
+    guestData.append({ "name" : fake.name(), "phone_number" : fake.phone_number(), "points_earned" : 0})
 
 guests = guest.insert_many(guestData)
 
@@ -32,11 +32,11 @@ regions = ["Alma" ,"Fleurimont" ,"Longueuil" ,"Amos" ,"Gaspe" ,"Marieville" ,"An
 # print(len(regions))
 restaurantData = []
 
-for i in range(1000):
+for i in range(100):
     restaurantData.append({"genre": random.choice(genres), "region": regions[random.randint(0, 37)], "name": fake.company()})
 
 restaurants = restaurant.insert_many(restaurantData)
-print(len(guests.inserted_ids), " restaurants inserted.")
+print(len(restaurants.inserted_ids), " restaurants inserted.")
 
 # print(restaurants.inserted_ids[4])
 
@@ -44,11 +44,22 @@ reservation = mydb["reservation"]
 
 reservationData = []
 
-for i in range(2000):
-    reservationData.append({ "gid": guests.inserted_ids[random.randint(0, 99)], "rid": restaurants.inserted_ids[random.randint(0, 99)], "amount_spent": fake.pyint(), "transaction_date": fake.date_time_between(start_date='-4y', end_date='now', tzinfo=None), "guest_count": random.randint(1,10) })
+for i in range(10000):
+    reservationData.append({ "gid": guests.inserted_ids[random.randint(0, 499)], "rid": restaurants.inserted_ids[random.randint(0, 99)], "amount_spent": fake.pyint() / 100, "transaction_date": fake.date_time_between(start_date='-2y', end_date='now', tzinfo=None), "guest_count": random.randint(1,10) })
 
 reservations = reservation.insert_many(reservationData)
 
 print(len(reservations.inserted_ids), " reservations inserted.")
 
-print(mydb.list_collection_names())
+# print(mydb.list_collection_names())
+
+guestCol = mydb["guest"]
+
+for guest in guestCol.find({}):
+    reservationCol = mydb["reservation"]
+
+    money_spent = 0
+    for reservation in reservationCol.find({"gid" : guest["_id"]}):
+        money_spent += reservation["amount_spent"]
+
+    guestCol.update_one({"_id" : guest["_id"]}, { "$set": { "points_earned": money_spent } })

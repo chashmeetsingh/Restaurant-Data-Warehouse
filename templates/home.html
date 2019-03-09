@@ -177,6 +177,7 @@
           cache: false,
           success: function(data){
             $('#data').html('');
+
             var newData = JSON.parse(data);
             // alert(newData.length);
             for(var i = 0; i < newData.length; i++) {
@@ -187,13 +188,15 @@
               res += "</tr>";
               $('#data').append(res);
             }
+          }, error: function (xhr) {
+            // $('#terminal').write(xhr.responseText);
           }
         });
       } else {
         this.echo('');
       }
     }, {
-      greetings: 'DB Interaction Layer',
+      greetings: 'Database Interaction Layer',
       name: 'js_demo',
       height: 200,
       prompt: 'console> '

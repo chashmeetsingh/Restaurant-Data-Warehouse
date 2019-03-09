@@ -33,9 +33,15 @@ dwCursor = dwConnection.cursor()
 @app.route("/updateData")
 def home():
 
+    # Truncate Data
+    dwCursor.execute("TRUNCATE TABLE DIM_GUEST")
+    dwCursor.execute("TRUNCATE TABLE DIM_RESTAURANT")
+    dwCursor.execute("TRUNCATE TABLE DIM_RESERVATION")
+    dwCursor.execute("TRUNCATE TABLE dw_fact")
+
     # Transform Data
 
-    # Get Reservations
+    # Get Reservations from SDB1
     sdb1Cursor.execute("SELECT * FROM reservations")
     reservationsSDB1 = sdb1Cursor.fetchall()
 
@@ -56,8 +62,8 @@ def home():
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dim_guest1 issue " + str(e))
+            pass
 
         try:
             sql = "INSERT INTO DIM_RESTAURANT (rid, genre, region, name) VALUES(%s, %s, %s, %s)"
@@ -65,8 +71,8 @@ def home():
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dim_restaurant1 issue " + str(e))
+            pass
 
         try:
             sql = "INSERT INTO DIM_RESERVATION (guest_count, amount_spent) VALUES(%s, %s)"
@@ -75,8 +81,8 @@ def home():
             dwConnection.commit()
             reserve_id = dwCursor.lastrowid
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dim_reservation1 issue " + str(e))
+            pass
 
         try:
             sql = "INSERT INTO dw_fact (gid, rid, created_at, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
@@ -84,10 +90,12 @@ def home():
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dw_fact1 issue " + str(e))
+            pass
 
         # break
+
+    # Get reservations from SDB2
 
     reservationCollection = sdb2["reservation"].find({})
     for reservation in reservationCollection:
@@ -103,8 +111,8 @@ def home():
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dim_guest2 issue " + str(e))
+            pass
 
         try:
             sql = "INSERT INTO DIM_RESTAURANT (rid, genre, region, name) VALUES(%s, %s, %s, %s)"
@@ -112,8 +120,8 @@ def home():
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dim_restaurant2 issue " + str(e))
+            pass
 
         try:
             sql = "INSERT INTO DIM_RESERVATION (guest_count, amount_spent) VALUES(%s, %s)"
@@ -122,8 +130,8 @@ def home():
             reserve_id = dwCursor.lastrowid
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dim_reservation2 issue " + str(e))
+            pass
 
         try:
             sql = "INSERT INTO dw_fact (gid, rid, created_at, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
@@ -131,12 +139,12 @@ def home():
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
-            print(e)
-            continue
+            print("dw_fact2 issue " + str(e))
+            pass
 
         # break
 
-    return render_template("home.html")
+    return render_template("about.html")
 
 @app.route("/about")
 def about():
@@ -153,9 +161,10 @@ def execute():
     try:
         dwCursor.execute(query)
     except:
-        return "Invalid query"
+        return "Invalid query", 500
 
     cursorData = dwCursor.fetchall()
+    # print(len(cursorData))
     data = []
     for d in cursorData:
         if "dw_fact" in query:
@@ -176,6 +185,54 @@ def execute():
                     res[params[i]] = d[i]
                 data.append(res)
 
+        elif "dim_guest" in query:
+            if "*" in query:
+                data.append({
+                    "gid": d[0],
+                    "name": d[1],
+                    "phone": d[2]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
+
+        elif "dim_restaurant" in query:
+            if "*" in query:
+                data.append({
+                    "rid": d[0],
+                    "genre": d[1],
+                    "region": d[2],
+                    "name": d[3]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
+
+        elif "dim_reservation" in query:
+            if "*" in query:
+                data.append({
+                    "res_id": d[0],
+                    "guest_count": d[1],
+                    "amount_spent": d[2]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
 
     return json.dumps(data)
 
