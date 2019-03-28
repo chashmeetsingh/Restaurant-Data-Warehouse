@@ -68,12 +68,13 @@ guests = mycursor.fetchall()
 #   print(guest)
 
 genres = ['Italian/French', 'Dining bar', 'Yakiniku/Korean food', 'Cafe/Sweets', 'Izakaya', 'Okonomiyaki/Monja/Teppanyaki', 'Bar/Cocktail', 'Japanese food', 'Creative cuisine', 'Other', 'Western food', 'International cuisine', 'Asian', 'Karaoke/Party']
-regions = ["Ajax" ,"Halton" ,"Peterborough" ,"Atikokan" ,"Halton Hills" ,"Pickering" ,"Barrie" ,"Hamilton" ,"Port Bruce" ,"Belleville" ,"Hamilton-Wentworth" ,"Port Burwell" ,"Blandford-Blenheim" ,"Hearst" ,"Port Colborne" ,"Blind River" ,"Huntsville" ,"Port Hope" ,"Brampton" ,"Ingersoll" ,"Prince Edward" ,"Brant" ,"James" ,"Quinte West" ,"Brantford" ,"Kanata" ,"Renfrew" ,"Brock" ,"Kincardine" ,"Richmond Hill" ,"Brockville" ,"King" ,"Sarnia" ,"Burlington" ,"Kingston" ,"Sault Ste. Marie" ,"Caledon" ,"Kirkland Lake" ,"Scarborough" ,"Cambridge" ,"Kitchener" ,"Scugog" ,"Chatham-Kent" ,"Larder Lake" ,"Souix Lookout CoC Sioux Lookout" ,"Chesterville" ,"Leamington" ,"Smiths Falls" ,"Clarington" ,"Lennox-Addington" ,"South-West Oxford" ,"Cobourg" ,"Lincoln" ,"St. Catharines" ,"Cochrane" ,"Lindsay" ,"St. Thomas" ,"Collingwood" ,"London" ,"Stoney Creek" ,"Cornwall" ,"Loyalist Township" ,"Stratford" ,"Cumberland" ,"Markham" ,"Sudbury" ,"Deep River" ,"Metro Toronto" ,"Temagami" ,"Dundas" ,"Merrickville" ,"Thorold" ,"Durham" ,"Milton" ,"Thunder Bay" ,"Dymond" ,"Nepean" ,"Tillsonburg" ,"Ear Falls" ,"Newmarket" ,"Timmins" ,"East Gwillimbury" ,"Niagara" ,"Toronto" ,"East Zorra-Tavistock" ,"Niagara Falls" ,"Uxbridge" ,"Elgin" ,"Niagara-on-the-Lake" ,"Vaughan" ,"Elliot Lake" ,"North Bay" ,"Wainfleet" ,"Flamborough" ,"North Dorchester" ,"Wasaga Beach" ,"Fort Erie" ,"North Dumfries" ,"Waterloo" ,"Fort Frances" ,"North York" ,"Waterloo" ,"Gananoque" ,"Norwich" ,"Welland" ,"Georgina" ,"Oakville" ,"Wellesley" ,"Glanbrook" ,"Orangeville" ,"West Carleton" ,"Gloucester" ,"Orillia" ,"West Lincoln" ,"Goulbourn" ,"Osgoode" ,"Whitby" ,"Gravenhurst" ,"Oshawa" ,"Wilmot" ,"Grimsby" ,"Ottawa" ,"Windsor" ,"Guelph" ,"Ottawa-Carleton" ,"Woolwich" ,"Haldimand-Norfork" ,"Owen Sound" ,"York"]
+#regions = ["Alma" ,"Fleurimont" ,"Longueuil" ,"Amos" ,"Gaspe" ,"Marieville" ,"Anjou" ,"Gatineau" ,"Mount Royal" ,"Aylmer" ,"Hull" ,"Montreal" ,"Beauport" ,"Joliette" ,"Montreal Region" ,"Bromptonville" ,"Jonquiere" ,"Montreal-Est" ,"Brosssard" ,"Lachine" ,"Quebec" ,"Chateauguay" ,"Lasalle" ,"Saint-Leonard" ,"Chicoutimi" ,"Laurentides" ,"Sherbrooke" ,"Coaticook" ,"LaSalle" ,"Sorel" ,"Coaticook" ,"Laval" ,"Thetford Mines" ,"Dorval" ,"Lennoxville" ,"Victoriaville" ,"Drummondville" ,"Levis"]
+regions = ["Alma" ,"Fleurimont" ,"Longueuil" ,"Gaspe", "Coaticook" ,"LaSalle" ,"Sorel" ,"Coaticook" ,"Laval","Dorval","Aylmer"]
 # print(len(regions))
 restaurantData = []
 
 for i in range(100):
-    restaurantData.append((random.choice(genres), regions[random.randint(0, 99)], fake.company()))
+    restaurantData.append((random.choice(genres), regions[random.randint(0, 10)], fake.company()))
 
 sql = "INSERT INTO restaurant (genre, region, name) VALUES (%s, %s, %s)"
 

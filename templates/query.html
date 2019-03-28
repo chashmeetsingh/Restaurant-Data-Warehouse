@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>DW Reservation System</title>
+
+  <link rel="stylesheet" href="{{ url_for('static',    filename='css/materialize.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',    filename='css/jquery.terminal.min.css') }}">
+
+  <style>
+    .row {
+      display: flex; /* equal height of the children */
+    }
+  </style>
+
+</head>
+<body>
+
+{% include "_navbar.html" %}
+
+<div class="container" style="margin-top: 20px;">
+    <h4>Sample Queries:</h4>
+  <ul class="collapsible">
+    <li>
+      <div class="collapsible-header" onclick="queryOne()">1. Give me the money spent in restaurants in all regions every month for the last year.</div>
+      <div class="collapsible-body center" id="query_one">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+      </div>
+    </li>
+    <li>
+      <div class="collapsible-header" onclick="queryTwo()">2. Give me the money spent in restaurants in all regions every quarter for the last year.</div>
+      <div class="collapsible-body center" id="query_two">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+      </div>
+    </li>
+    <li>
+      <div class="collapsible-header">3</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">4</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">5</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">6</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">7</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">8</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">9</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+    <li>
+      <div class="collapsible-header">10</div>
+      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+    </li>
+  </ul>
+
+</div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+
+<!-- Queries -->
+<script>
+    $(document).ready(function(){
+        $('.collapsible').collapsible();
+    });
+
+    var backgroundColors = [
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                "#ef5350",
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)',
+                'rgb(153, 102, 255)',
+                '#ffab00',
+                "#5e35b1",
+                "#009688",
+                "#e65100",
+                "#607d8b"
+        ];
+    var months = [
+            "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
+    ];
+    var quarters = [
+            "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"
+    ];
+
+    function getColors(index) {
+        var colors = [];
+        for(var j = 0; j < 35; j++) {
+          colors.push(backgroundColors[index % 12]);
+        }
+        return colors;
+    }
+
+    function queryOne() {
+      $.ajax({
+      type: 'GET',
+      url: 'http://localhost:5000/query_one',
+      dataType: 'json',
+      success: function (data) {
+        var jan = [];
+        var feb = [];
+        var mar = [];
+        var apr = [];
+        var may = [];
+        var jun = [];
+        var jul = [];
+        var aug = [];
+        var sep = [];
+        var oct = [];
+        var nov = [];
+        var dec = [];
+
+        $.each(data, function (index, element) {
+          switch (element.month) {
+            case 1:
+                  jan.push(element);
+                  break;
+            case 2:
+                  feb.push(element);
+                  break;
+            case 3:
+                  mar.push(element);
+                  break;
+            case 4:
+                  apr.push(element);
+                  break;
+            case 5:
+                  may.push(element);
+                  break;
+            case 6:
+                  jun.push(element);
+                  break;
+            case 7:
+                  jul.push(element);
+                  break;
+            case 8:
+                  aug.push(element);
+                  break;
+            case 9:
+                  sep.push(element);
+                  break;
+            case 10:
+                  oct.push(element);
+                  break;
+            case 11:
+                  nov.push(element);
+                  break;
+            case 12:
+                  dec.push(element);
+                  break;
+            default:
+              console.log('error');
+          }
+        });
+
+        jan.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        feb.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        mar.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        apr.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        may.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        jun.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        jul.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        aug.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        sep.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        oct.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        nov.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        dec.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+
+        var consolidatedData = [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec];
+        console.log(consolidatedData);
+
+        $('#query_one').html('</canvas><canvas id="doughnut-chartcanvas"></canvas>\n');
+        var ctx1 = $("#doughnut-chartcanvas");
+
+        var datasets = [];
+
+        for (var i = 0; i < 12; i++) {
+
+          var data = [];
+
+          for(var j = 0; j < 10; j++) {
+            data.push(consolidatedData[i][j].amount_spent);
+          }
+
+          var object = {
+            label: months[i],
+            data: data,
+            backgroundColor: getColors(i)
+          };
+          datasets.push(object);
+        }
+
+        var labels = [];
+        for(var i = 0; i < 10; i++) {
+          labels.push(jan[i].region);
+        }
+
+        //doughnut chart data
+        var data1 = {
+          labels: labels,
+          datasets: datasets
+        };
+
+        //options
+        var options = {
+          responsive: true,
+          title: {
+            display: true,
+            position: "top",
+            text: "Money spent every month in every region in year 2018",
+            fontSize: 18,
+            fontColor: "#111"
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              fontColor: "#333",
+              fontSize: 16
+            }
+          }
+        };
+
+        //create Chart class object
+        var chart1 = new Chart(ctx1, {
+          type: "bar",
+          data: data1,
+          options: options
+        });
+
+      }, error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status, thrownError);
+      }
+    })
+    }
+
+    function queryTwo() {
+      $.ajax({
+      type: 'GET',
+      url: 'http://localhost:5000/query_two',
+      dataType: 'json',
+      success: function (data) {
+        var q1 = [];
+        var q2 = [];
+        var q3 = [];
+        var q4 = [];
+
+        $.each(data, function (index, element) {
+          switch (element.quarter) {
+            case "Quarter 1":
+                  q1.push(element);
+                  break;
+            case "Quarter 2":
+                  q2.push(element);
+                  break;
+            case "Quarter 3":
+                  q3.push(element);
+                  break;
+            case "Quarter 4":
+                  q4.push(element);
+                  break;
+            default:
+              console.log('error');
+          }
+        });
+
+        q1.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        q2.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        q3.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        q4.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+
+        var consolidatedData = [q1, q2, q3, q4];
+        console.log(consolidatedData);
+
+        $('#query_two').html('</canvas><canvas id="doughnut-chartcanvas-2"></canvas>\n');
+        var ctx1 = $("#doughnut-chartcanvas-2");
+
+        var datasets = [];
+
+        for (var i = 0; i < 4; i++) {
+
+          var data = [];
+
+          for(var j = 0; j < 10; j++) {
+            data.push(consolidatedData[i][j].amount_spent);
+          }
+
+          var object = {
+            label: quarters[i],
+            data: data,
+            backgroundColor: getColors(i)
+          };
+          datasets.push(object);
+        }
+
+        var labels = [];
+        for(var i = 0; i < 10; i++) {
+          labels.push(q1[i].region);
+        }
+
+        //doughnut chart data
+        var data1 = {
+          labels: labels,
+          datasets: datasets
+        };
+
+        //options
+        var options = {
+          responsive: true,
+          title: {
+            display: true,
+            position: "top",
+            text: "Money spent every quarter in every region in year 2018",
+            fontSize: 18,
+            fontColor: "#111"
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              fontColor: "#333",
+              fontSize: 16
+            }
+          }
+        };
+
+        //create Chart class object
+        var chart1 = new Chart(ctx1, {
+          type: "bar",
+          data: data1,
+          options: options
+        });
+
+      }, error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status, thrownError);
+      }
+    })
+    }
+
+</script>
+
+</body>
+</html>

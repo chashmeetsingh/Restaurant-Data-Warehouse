@@ -1,12 +1,16 @@
 <div class="navbar-fixed">
-    <nav>
-        <div class="container">
-            <div class="nav-wrapper">
-                <a href="{{ url_for('home') }}" class="brand-logo">DW Reservation System</a>
-                <ul class="right hide-on-med-and-down">
-                    <li><a href="{{ url_for('about') }}">About</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+  <nav>
+    <div class="container">
+      <div class="nav-wrapper">
+        <a href="{{ url_for('home') }}" class="brand-logo">DW Reservation System</a>
+        <ul class="right hide-on-med-and-down">
+            <li><a href="{{ url_for('render_dw') }}">DW</a></li>
+            <li><a href="{{ url_for('render_sdb1') }}">SDB1</a></li>
+            <li><a href="{{ url_for('render_sdb2') }}">SDB2</a></li>
+            <li><a href="{{ url_for('queries') }}">Queries</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 </div>

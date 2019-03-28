@@ -27,13 +27,13 @@ print(len(guests.inserted_ids), " guests inserted.")
 restaurant = mydb["restaurant"]
 
 genres = ['Italian/French', 'Dining bar', 'Yakiniku/Korean food', 'Cafe/Sweets', 'Izakaya', 'Okonomiyaki/Monja/Teppanyaki', 'Bar/Cocktail', 'Japanese food', 'Creative cuisine', 'Other', 'Western food', 'International cuisine', 'Asian', 'Karaoke/Party']
-regions = ["Alma" ,"Fleurimont" ,"Longueuil" ,"Amos" ,"Gaspe" ,"Marieville" ,"Anjou" ,"Gatineau" ,"Mount Royal" ,"Aylmer" ,"Hull" ,"Montreal" ,"Beauport" ,"Joliette" ,"Montreal Region" ,"Bromptonville" ,"Jonquiere" ,"Montreal-Est" ,"Brosssard" ,"Lachine" ,"Quebec" ,"Chateauguay" ,"Lasalle" ,"Saint-Leonard" ,"Chicoutimi" ,"Laurentides" ,"Sherbrooke" ,"Coaticook" ,"LaSalle" ,"Sorel" ,"Coaticook" ,"Laval" ,"Thetford Mines" ,"Dorval" ,"Lennoxville" ,"Victoriaville" ,"Drummondville" ,"Levis"]
+regions = ["Alma" ,"Fleurimont" ,"Longueuil" ,"Gaspe", "Coaticook" ,"LaSalle" ,"Sorel" ,"Coaticook" ,"Laval","Dorval","Aylmer"]
 
 # print(len(regions))
 restaurantData = []
 
 for i in range(100):
-    restaurantData.append({"genre": random.choice(genres), "region": regions[random.randint(0, 37)], "name": fake.company()})
+    restaurantData.append({"genre": random.choice(genres), "region": regions[random.randint(0, 10)], "name": fake.company()})
 
 restaurants = restaurant.insert_many(restaurantData)
 print(len(restaurants.inserted_ids), " restaurants inserted.")

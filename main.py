@@ -30,8 +30,10 @@ dwConnection = mysql.connector.connect(
 )
 dwCursor = dwConnection.cursor()
 
+weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
 @app.route("/updateData")
-def home():
+def updateData():
 
     # Truncate Data
     dwCursor.execute("TRUNCATE TABLE DIM_GUEST")
@@ -55,6 +57,9 @@ def home():
         restaurant = sdb1Cursor.fetchall()[0]
 
         # print(guest, restaurant, reservation)
+        # print(reservation[3].day, reservation[3].month, reservation[3].year, reservation[3].weekday())
+
+        # return
 
         try:
             sql = "INSERT INTO DIM_GUEST (gid, name, phone) VALUES(%s, %s, %s)"
@@ -85,8 +90,28 @@ def home():
             pass
 
         try:
-            sql = "INSERT INTO dw_fact (gid, rid, created_at, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
-            values = (reservation[0], reservation[1], reservation[3], guest[3], reserve_id)
+            q = ""
+            month = reservation[3].month
+            if month >= 1 and month <= 3:
+                q = "Quarter 1"
+            elif month >= 4 and month <= 6:
+                q = "Quarter 2"
+            elif month >= 7 and month <= 9:
+                q = "Quarter 3"
+            else:
+                q = "Quarter 4"
+            sql = "INSERT INTO DIM_DATE (date, month, year, weekday, quarter) VALUES (%s, %s, %s, %s, %s)"
+            values = (reservation[3].day, reservation[3].month, reservation[3].year, weekdays[reservation[3].weekday()], q)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+        except mysql.connector.Error as e:
+            print("dw_fact1 issue " + str(e))
+            return
+
+        try:
+
+            sql = "INSERT INTO dw_fact (gid, rid, did, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
+            values = (reservation[0], reservation[1], dwCursor.lastrowid, guest[3], reserve_id)
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
@@ -134,8 +159,28 @@ def home():
             pass
 
         try:
-            sql = "INSERT INTO dw_fact (gid, rid, created_at, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
-            values = (str(reservation["gid"]), str(reservation["rid"]), str(reservation["transaction_date"]), str(guest["points_earned"]), reserve_id)
+            sql = "INSERT INTO DIM_DATE (date, month, year, weekday, quarter) VALUES (%s, %s, %s, %s, %s)"
+            q = ""
+            if reservation["transaction_date"].month >= 1 and reservation["transaction_date"].month <= 3:
+                q = "Quarter 1"
+            elif reservation["transaction_date"].month >= 4 and reservation["transaction_date"].month <= 6:
+                q = "Quarter 2"
+            elif reservation["transaction_date"].month >= 7 and reservation["transaction_date"].month <= 9:
+                q = "Quarter 3"
+            else:
+                q = "Quarter 4"
+            values = (reservation["transaction_date"].day, reservation["transaction_date"].month,
+                      reservation["transaction_date"].year, weekdays[reservation["transaction_date"].weekday()], q)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+        except mysql.connector.Error as e:
+            print("dw_fact2 issue " + str(e))
+            pass
+
+        try:
+
+            sql = "INSERT INTO dw_fact (gid, rid, did, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
+            values = (str(reservation["gid"]), str(reservation["rid"]), dwCursor.lastrowid, str(guest["points_earned"]), reserve_id)
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
@@ -144,15 +189,59 @@ def home():
 
         # break
 
-    return render_template("about.html")
+    return render_template("home.html")
 
 @app.route("/about")
 def about():
     return render_template("about.html")
 
 @app.route("/")
-def visualize():
+def home():
     return render_template("home.html")
+
+@app.route("/dw")
+def render_dw():
+    return render_template("dw.html")
+
+@app.route("/sdb1")
+def render_sdb1():
+    return render_template("sdb1.html")
+
+@app.route("/sdb2")
+def render_sdb2():
+    return render_template("sdb2.html")
+
+@app.route("/queries")
+def queries():
+    return render_template("query.html")
+
+@app.route("/query_one")
+def query_one():
+    query = "Select count(*), restaurant.region, sum(reservation.amount_spent), dim_date.month, dim_date.year from dw_fact dw, dim_guest guest, dim_restaurant restaurant, dim_reservation reservation, dim_date where dw.gid = guest.gid and dw.rid = restaurant.rid and dw.reserve_id = reservation.res_id and dim_date.did = dw.did and dim_date.year = 2018 group by restaurant.region, dim_date.month"
+    try:
+        dwCursor.execute(query)
+        query_data = dwCursor.fetchall()
+        data = []
+        for q in query_data:
+            data.append(({ 'count': q[0], 'region': q[1], 'amount_spent': int(q[2]), 'month': int(q[3]), 'year': int(q[4]) }))
+        return json.dumps(data)
+    except Exception as e:
+        print 'Error:', e
+        return e.message
+
+@app.route("/query_two")
+def query_two():
+    query = "Select count(*), restaurant.region, sum(reservation.amount_spent), dim_date.year, dim_date.quarter from dw_fact dw, dim_guest guest, dim_restaurant restaurant, dim_reservation reservation, dim_date where dw.gid = guest.gid and dw.rid = restaurant.rid and dw.reserve_id = reservation.res_id and dim_date.did = dw.did and dim_date.year = 2018 group by restaurant.region, dim_date.quarter"
+    try:
+        dwCursor.execute(query)
+        query_data = dwCursor.fetchall()
+        data = []
+        for q in query_data:
+            data.append(({ 'count': q[0], 'region': q[1], 'amount_spent': int(q[2]), 'year': int(q[3]), 'quarter': q[4] }))
+        return json.dumps(data)
+    except Exception as e:
+        print 'Error:', e
+        return e.message
 
 @app.route("/execute")
 def execute():
