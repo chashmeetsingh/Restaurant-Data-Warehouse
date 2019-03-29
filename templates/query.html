@@ -54,16 +54,52 @@
       </div>
     </li>
     <li>
-      <div class="collapsible-header">3</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+      <div class="collapsible-header" onclick="queryThree()">3. Give me the money spent in all the cuisines every month for the last year.</div>
+      <div class="collapsible-body center" id="query_three">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+      </div>
     </li>
     <li>
-      <div class="collapsible-header">4</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+      <div class="collapsible-header" onclick="queryFour()">4. Give me the money spent in all the cuisines every quarter for the last year.</div>
+      <div class="collapsible-body center" id="query_four">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+      </div>
     </li>
     <li>
-      <div class="collapsible-header">5</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+      <div class="collapsible-header" onclick="queryFive()">5. Give me the money spent in all regions for every weekday for the last year.</div>
+      <div class="collapsible-body center" id="query_five">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div><div class="gap-patch">
+                <div class="circle"></div>
+              </div><div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+      </div>
     </li>
     <li>
       <div class="collapsible-header">6</div>
@@ -101,16 +137,16 @@
 
     var backgroundColors = [
                 'rgb(255, 99, 132)',
-                'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                "#ef5350",
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)',
                 'rgb(153, 102, 255)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                "#ef5350",
+                'rgb(54, 162, 235)',
                 '#ffab00',
                 "#5e35b1",
                 "#009688",
                 "#e65100",
+                'rgb(255, 159, 64)',
                 "#607d8b"
         ];
     var months = [
@@ -119,6 +155,7 @@
     var quarters = [
             "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"
     ];
+    var weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
     function getColors(index) {
         var colors = [];
@@ -412,6 +449,570 @@
             display: true,
             position: "top",
             text: "Money spent every quarter in every region in year 2018",
+            fontSize: 18,
+            fontColor: "#111"
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              fontColor: "#333",
+              fontSize: 16
+            }
+          }
+        };
+
+        //create Chart class object
+        var chart1 = new Chart(ctx1, {
+          type: "bar",
+          data: data1,
+          options: options
+        });
+
+      }, error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status, thrownError);
+      }
+    })
+    }
+
+    function queryThree() {
+      $.ajax({
+      type: 'GET',
+      url: 'http://localhost:5000/query_three',
+      dataType: 'json',
+      success: function (data) {
+        var italian = [];
+        var diningBar = [];
+        var koreanFood = [];
+        var sweets = [];
+        var izakaya = [];
+        var monja = [];
+        var bar = [];
+        var japanese = [];
+        var creative = [];
+        var other = [];
+        var western = [];
+        var international = [];
+        var asian = [];
+        var karaoke = [];
+
+        $.each(data, function (index, element) {
+          switch (element.genre) {
+            case "Italian/French":
+                  italian.push(element);
+                  break;
+            case "Dining bar":
+                  diningBar.push(element);
+                  break;
+            case "Yakiniku/Korean food":
+                  koreanFood.push(element);
+                  break;
+            case "Cafe/Sweets":
+                  sweets.push(element);
+                  break;
+            case "Izakaya":
+                  izakaya.push(element);
+                  break;
+            case "Okonomiyaki/Monja/Teppanyaki":
+                  monja.push(element);
+                  break;
+            case "Bar/Cocktail":
+                  bar.push(element);
+                  break;
+            case "Japanese food":
+                  japanese.push(element);
+                  break;
+            case "Creative cuisine":
+                  creative.push(element);
+                  break;
+            case "Other":
+                  other.push(element);
+                  break;
+            case "Western food":
+                  western.push(element);
+                  break;
+            case "International cuisine":
+                  international.push(element);
+                  break;
+            case "Asian":
+                  asian.push(element);
+                  break;
+            case "Karaoke/Party":
+                  karaoke.push(element);
+                  break;
+            default:
+              console.log('error', element);
+          }
+        });
+
+        italian.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        diningBar.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        koreanFood.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        sweets.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        izakaya.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        monja.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        bar.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        japanese.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        creative.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        other.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        western.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        international.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        asian.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        karaoke.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+
+        var consolidatedData = [italian, diningBar, koreanFood, sweets, izakaya, monja, bar, japanese, creative, other, western, international, asian, karaoke];
+        console.log(consolidatedData);
+
+        $('#query_three').html('</canvas><canvas id="doughnut-chartcanvas-3"></canvas>\n');
+        var ctx1 = $("#doughnut-chartcanvas-3");
+
+        var datasets = [];
+
+        for (var i = 0; i < 14; i++) {
+
+          var data = [];
+
+          for(var j = 0; j < 12; j++) {
+            data.push(consolidatedData[i][j].amount_spent);
+          }
+
+          var object = {
+            label: consolidatedData[i][0].genre,
+            data: data,
+            backgroundColor: getColors(i)
+          };
+          datasets.push(object);
+        }
+
+        var labels = [];
+        for(var i = 0; i < 12; i++) {
+          labels.push(months[i]);
+        }
+
+        //doughnut chart data
+        var data1 = {
+          labels: labels,
+          datasets: datasets
+        };
+
+        //options
+        var options = {
+          responsive: true,
+          title: {
+            display: true,
+            position: "top",
+            text: "Money spent every month in every restaurant cuisine in the year 2018",
+            fontSize: 18,
+            fontColor: "#111"
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              fontColor: "#333",
+              fontSize: 16
+            }
+          }
+        };
+
+        //create Chart class object
+        var chart1 = new Chart(ctx1, {
+          type: "bar",
+          data: data1,
+          options: options
+        });
+
+      }, error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status, thrownError);
+      }
+    })
+    }
+
+    function queryFour() {
+      $.ajax({
+      type: 'GET',
+      url: 'http://localhost:5000/query_four',
+      dataType: 'json',
+      success: function (data) {
+        var italian = [];
+        var diningBar = [];
+        var koreanFood = [];
+        var sweets = [];
+        var izakaya = [];
+        var monja = [];
+        var bar = [];
+        var japanese = [];
+        var creative = [];
+        var other = [];
+        var western = [];
+        var international = [];
+        var asian = [];
+        var karaoke = [];
+
+        $.each(data, function (index, element) {
+          switch (element.genre) {
+            case "Italian/French":
+                  italian.push(element);
+                  break;
+            case "Dining bar":
+                  diningBar.push(element);
+                  break;
+            case "Yakiniku/Korean food":
+                  koreanFood.push(element);
+                  break;
+            case "Cafe/Sweets":
+                  sweets.push(element);
+                  break;
+            case "Izakaya":
+                  izakaya.push(element);
+                  break;
+            case "Okonomiyaki/Monja/Teppanyaki":
+                  monja.push(element);
+                  break;
+            case "Bar/Cocktail":
+                  bar.push(element);
+                  break;
+            case "Japanese food":
+                  japanese.push(element);
+                  break;
+            case "Creative cuisine":
+                  creative.push(element);
+                  break;
+            case "Other":
+                  other.push(element);
+                  break;
+            case "Western food":
+                  western.push(element);
+                  break;
+            case "International cuisine":
+                  international.push(element);
+                  break;
+            case "Asian":
+                  asian.push(element);
+                  break;
+            case "Karaoke/Party":
+                  karaoke.push(element);
+                  break;
+            default:
+              console.log('error', element);
+          }
+        });
+
+        italian.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        diningBar.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        koreanFood.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        sweets.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        izakaya.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        monja.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        bar.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        japanese.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        creative.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        other.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        western.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        international.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        asian.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        karaoke.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+
+        var consolidatedData = [italian, diningBar, koreanFood, sweets, izakaya, monja, bar, japanese, creative, other, western, international, asian, karaoke];
+        console.log(consolidatedData);
+
+        $('#query_four').html('</canvas><canvas id="doughnut-chartcanvas-4"></canvas>\n');
+        var ctx1 = $("#doughnut-chartcanvas-4");
+
+        var datasets = [];
+
+        for (var i = 0; i < 14; i++) {
+
+          var data = [];
+
+          for(var j = 0; j < 4; j++) {
+            data.push(consolidatedData[i][j].amount_spent);
+          }
+
+          var object = {
+            label: consolidatedData[i][0].genre,
+            data: data,
+            backgroundColor: getColors(i)
+          };
+          datasets.push(object);
+        }
+
+        var labels = [];
+        for(var i = 0; i < 4; i++) {
+          labels.push(quarters[i]);
+        }
+
+        //doughnut chart data
+        var data1 = {
+          labels: labels,
+          datasets: datasets
+        };
+
+        //options
+        var options = {
+          responsive: true,
+          title: {
+            display: true,
+            position: "top",
+            text: "Money spent every quarter in every restaurant cuisine in the year 2018",
+            fontSize: 18,
+            fontColor: "#111"
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              fontColor: "#333",
+              fontSize: 16
+            }
+          }
+        };
+
+        //create Chart class object
+        var chart1 = new Chart(ctx1, {
+          type: "bar",
+          data: data1,
+          options: options
+        });
+
+      }, error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status, thrownError);
+      }
+    })
+    }
+
+    function queryFive() {
+      $.ajax({
+      type: 'GET',
+      url: 'http://localhost:5000/query_five',
+      dataType: 'json',
+      success: function (data) {
+        var monday = [];
+        var tuesday = [];
+        var wednesday = [];
+        var thursday = [];
+        var friday = [];
+        var saturday = [];
+        var sunday = [];
+
+        $.each(data, function (index, element) {
+          switch (element.weekday) {
+            case "Monday":
+                  monday.push(element);
+                  break;
+            case "Tuesday":
+                  tuesday.push(element);
+                  break;
+            case "Wednesday":
+                  wednesday.push(element);
+                  break;
+            case "Thursday":
+                  thursday.push(element);
+                  break;
+            case "Friday":
+                  friday.push(element);
+                  break;
+            case "Saturday":
+                  saturday.push(element);
+                  break;
+            case "Sunday":
+                  sunday.push(element);
+                  break;
+            default:
+              console.log('error', element);
+          }
+        });
+
+        monday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        tuesday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        wednesday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        thursday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        friday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        saturday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+        sunday.sort(function(a, b){
+            if(a.region < b.region) { return -1; }
+            if(a.region > b.region) { return 1; }
+            return 0;
+        });
+
+        var consolidatedData = [monday, tuesday, wednesday, thursday, friday, saturday, sunday];
+        console.log(consolidatedData);
+
+        $('#query_five').html('</canvas><canvas id="doughnut-chartcanvas-5"></canvas>\n');
+        var ctx1 = $("#doughnut-chartcanvas-5");
+
+        var datasets = [];
+
+        for (var i = 0; i < 7; i++) {
+
+          var data = [];
+
+          for(var j = 0; j < 10; j++) {
+            data.push(consolidatedData[i][j].amount_spent);
+          }
+
+          var object = {
+            label: consolidatedData[i][0].weekday,
+            data: data,
+            backgroundColor: getColors(i)
+          };
+          datasets.push(object);
+        }
+
+        var labels = [];
+        for(var i = 0; i < monday.length; i++) {
+          labels.push(monday[i].region);
+        }
+
+        //doughnut chart data
+        var data1 = {
+          labels: labels,
+          datasets: datasets
+        };
+
+        //options
+        var options = {
+          responsive: true,
+          title: {
+            display: true,
+            position: "top",
+            text: "Money spent every weekday in every region in the year 2018",
             fontSize: 18,
             fontColor: "#111"
           },

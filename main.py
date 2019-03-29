@@ -243,6 +243,48 @@ def query_two():
         print 'Error:', e
         return e.message
 
+@app.route("/query_three")
+def query_three():
+    query = "Select count(*), restaurant.genre, sum(reservation.amount_spent), dim_date.year, dim_date.month from dw_fact dw, dim_restaurant restaurant, dim_reservation reservation, dim_date where dw.rid = restaurant.rid and dw.reserve_id = reservation.res_id and dim_date.did = dw.did and dim_date.year = 2018 group by dim_date.month, restaurant.genre"
+    try:
+        dwCursor.execute(query)
+        query_data = dwCursor.fetchall()
+        data = []
+        for q in query_data:
+            data.append(({ 'count': q[0], 'genre': q[1], 'amount_spent': int(q[2]), 'year': int(q[3]), 'month': q[4] }))
+        return json.dumps(data)
+    except Exception as e:
+        print 'Error:', e
+        return e.message
+
+@app.route("/query_four")
+def query_four():
+    query = "Select count(*), restaurant.genre, sum(reservation.amount_spent), dim_date.year, dim_date.quarter from dw_fact dw, dim_restaurant restaurant, dim_reservation reservation, dim_date where dw.rid = restaurant.rid and dw.reserve_id = reservation.res_id and dim_date.did = dw.did and dim_date.year = 2018 group by dim_date.quarter, restaurant.genre"
+    try:
+        dwCursor.execute(query)
+        query_data = dwCursor.fetchall()
+        data = []
+        for q in query_data:
+            data.append(({ 'count': q[0], 'genre': q[1], 'amount_spent': int(q[2]), 'year': int(q[3]), 'quarter': q[4] }))
+        return json.dumps(data)
+    except Exception as e:
+        print 'Error:', e
+        return e.message
+
+@app.route("/query_five")
+def query_five():
+    query = "select count(*), sum(reservation.amount_spent), dim_date.weekday, restaurant.region from dw_fact dw, dim_restaurant restaurant, dim_reservation reservation, dim_date where dw.rid = restaurant.rid and dw.reserve_id = reservation.res_id and dim_date.did = dw.did and dim_date.year = 2018 group by dim_date.weekday, restaurant.region"
+    try:
+        dwCursor.execute(query)
+        query_data = dwCursor.fetchall()
+        data = []
+        for q in query_data:
+            data.append(({ 'count': q[0], 'amount_spent': int(q[1]), 'weekday': q[2], 'region': q[3] }))
+        return json.dumps(data)
+    except Exception as e:
+        print 'Error:', e
+        return e.message
+
 @app.route("/execute")
 def execute():
     query = request.args.get('query')
