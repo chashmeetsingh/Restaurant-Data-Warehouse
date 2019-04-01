@@ -303,7 +303,7 @@ def execute():
                 data.append({
                     "gid": d[0],
                     "rid": d[1],
-                    "created_at": d[2].strftime('%d-%b-%Y'),
+                    "did": d[2],
                     "reserve_id": d[3],
                     "points": d[4]
                 })
