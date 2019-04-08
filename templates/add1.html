@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>DW Reservation System</title>
+
+  <link rel="stylesheet" href="{{ url_for('static',    filename='css/materialize.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',    filename='css/jquery.terminal.min.css') }}">
+
+  <style>
+    .row {
+      display: flex; /* equal height of the children */
+    }
+  </style>
+
+</head>
+<body>
+
+{% include "_navbar.html" %}
+
+<div class="container" style="margin-top: 20px;">
+    <div class="row center">
+        <div class="col l4">
+            <h4>Add Guest</h4>
+            <form class="col s12" id="guest">
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="full_name" type="text" class="validate">
+                  <label for="full_name">Full Name</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="phone_number" type="text" class="validate">
+                  <label for="phone_number">Phone Number</label>
+                </div>
+              </div>
+                <div class="row">
+                    <div class="col s12">
+                        <button class="waves-effect waves-light btn">Create Guest</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col l4">
+            <h4>Add Restaurant</h4>
+
+            <form class="col s12" id="restaurant">
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="restaurant_name" type="text" class="validate">
+                  <label for="restaurant_name">Restaurant Name</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                    <select id="genre">
+                      <option value="" disabled selected>Choose your option</option>
+                        <option value="Italian/French">Italian/French</option>
+                        <option value="Dining bar">Dining bar</option>
+                        <option value="Yakiniku/Korean food">Yakiniku/Korean food</option>
+                        <option value="Cafe/Sweets">Cafe/Sweets</option>
+                        <option value="Izakaya">Izakaya</option>
+                        <option value="Okonomiyaki/Monja/Teppanyaki">Okonomiyaki/Monja/Teppanyaki</option>
+                        <option value="Bar/Cocktail">Bar/Cocktail</option>
+                        <option value="Japanese food">Japanese food</option>
+                        <option value="Creative cuisine">Creative cuisine</option>
+                        <option value="Other">Other</option>
+                        <option value="Western food">Western food</option>
+                        <option value="International cuisine">International cuisine</option>
+                        <option value="Asian">Asian</option>
+                        <option value="Karaoke/Part">Karaoke/Part</option>
+                    </select>
+                    <label>Genre</label>
+                  </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                    <select id="region">
+                      <option value="" disabled selected>Choose your option</option>
+                        <option value="Alma">Alma</option>
+                        <option value="Fleurimont">Fleurimont</option>
+                        <option value="Longueuil">Longueuil</option>
+                        <option value="Gaspe">Gaspe</option>
+                        <option value="Coaticook">Coaticook</option>
+                        <option value="LaSalle">LaSalle</option>
+                        <option value="Sorel">Sorel</option>
+                        <option value="Gatineau">Gatineau</option>
+                        <option value="Laval">Laval</option>
+                        <option value="Dorval">Dorval</option>
+                    </select>
+                    <label>Region</label>
+                  </div>
+              </div>
+                <div class="row">
+                    <div class="col s12">
+                        <button class="waves-effect waves-light btn">Create Restaurant</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col l4">
+            <h4>Add Reservation</h4>
+
+            <form class="col s12" id="reservation">
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="guest_count" type="number" class="validate">
+                  <label for="guest_count">Guest Count</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="amount_spent" type="number" class="validate">
+                  <label for="amount_spent">Amount Spent</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="date" type="text" class="validate datepicker">
+                  <label for="date">Date</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                    <select id="guest_id">
+                      <option value="" disabled selected>Choose your option</option>
+                        {% for guest_id in guests %}
+                            <option value="{{ guest_id }}">{{ guest_id }}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Guest ID</label>
+                  </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                    <select id="restaurant_id">
+                      <option value="" disabled selected>Choose your option</option>
+                        {% for restaurant_id in restaurants %}
+                            <option value="{{ restaurant_id }}">{{ restaurant_id }}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Restaurant ID</label>
+                  </div>
+              </div>
+                <div class="row">
+                    <div class="col s12">
+                        <button class="waves-effect waves-light btn">Create Reservation</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.terminal.min.js') }}"></script>
+
+<script>
+    $(document).ready(function(){
+        $('select').formSelect();
+      });
+    $(document).ready(function(){
+        $('.datepicker').datepicker();
+    });
+    $("#guest").on('submit', function(e){
+        e.preventDefault();
+        $.ajax({
+          type: "GET",
+          url: "/sdb1_add_guest",
+          data: {
+              'name': $('#full_name').val(),
+              'phone_number': $('#phone_number').val()
+          },
+          cache: false,
+          success: function(data){
+              console.log(data);
+              if (data == "true") {
+                M.toast({html: 'Guest added!'});
+              } else {
+                M.toast({html: 'Error adding guest!'});
+              }
+              $('#full_name').val('');
+              $('#phone_number').val('');
+          }, error: function (xhr) {
+            // $('#terminal').write(xhr.responseText);
+          }
+        });
+    });
+    $("#restaurant").on('submit', function(e){
+        e.preventDefault();
+        $.ajax({
+          type: "GET",
+          url: "/sdb1_add_restaurant",
+          data: {
+              'name': $('#restaurant_name').val(),
+              'genre': $('#genre').val(),
+              'region': $('#region').val()
+          },
+          cache: false,
+          success: function(data){
+              console.log(data);
+              if (data == "true") {
+                M.toast({html: 'Restaurant added!'});
+              } else {
+                M.toast({html: 'Error adding restaurant!'});
+              }
+              $('#restaurant_name').val('');
+              $('#region').val(1);
+              $('#genre').val(1);
+          }, error: function (xhr) {
+            // $('#terminal').write(xhr.responseText);
+          }
+        });
+    });
+    $("#reservation").on('submit', function(e){
+        e.preventDefault();
+        $.ajax({
+          type: "GET",
+          url: "/sdb1_add_reservation",
+          data: {
+              'guest_count': $('#guest_count').val(),
+              'gid': $('#guest_id').val(),
+              'rid': $('#restaurant_id').val(),
+              'amt_spent': $('#amount_spent').val(),
+              'date': $('#date').val()
+          },
+          cache: false,
+          success: function(data){
+              console.log(data);
+              if (data == "true") {
+                M.toast({html: 'Reservation added!'});
+              } else {
+                M.toast({html: 'Error adding reservation!'});
+              }
+              $('#guest_count').val('');
+              $('#guest_id').get(0).selectedIndex = 1;
+              $('#restaurant_id').get(0).selectedIndex = 1;
+              $('#amount_spent').val('');
+              $('#date').val('');
+          }, error: function (xhr) {
+            // $('#terminal').write(xhr.responseText);
+          }
+        });
+    });
+</script>
+
+</body>
+</html>

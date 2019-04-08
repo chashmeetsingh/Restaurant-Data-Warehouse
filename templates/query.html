@@ -101,26 +101,6 @@
           </div>
       </div>
     </li>
-    <li>
-      <div class="collapsible-header">6</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
-    </li>
-    <li>
-      <div class="collapsible-header">7</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
-    </li>
-    <li>
-      <div class="collapsible-header">8</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
-    </li>
-    <li>
-      <div class="collapsible-header">9</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
-    </li>
-    <li>
-      <div class="collapsible-header">10</div>
-      <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
-    </li>
   </ul>
 
 </div>
@@ -629,6 +609,7 @@
           var data = [];
 
           for(var j = 0; j < 12; j++) {
+              console.log(i, j);
             data.push(consolidatedData[i][j].amount_spent);
           }
 

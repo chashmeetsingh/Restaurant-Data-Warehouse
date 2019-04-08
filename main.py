@@ -3,6 +3,8 @@ import mysql.connector
 import pymongo
 import json
 import dateutil.parser
+from datetime import datetime
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
@@ -106,12 +108,12 @@ def updateData():
             dwConnection.commit()
         except mysql.connector.Error as e:
             print("dw_fact1 issue " + str(e))
-            return
+            pass
 
         try:
 
             sql = "INSERT INTO dw_fact (gid, rid, did, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
-            values = (reservation[0], reservation[1], dwCursor.lastrowid, guest[3], reserve_id)
+            values = (reservation[0], reservation[1], dwCursor.lastrowid, reservation[2], reserve_id)
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
@@ -180,7 +182,7 @@ def updateData():
         try:
 
             sql = "INSERT INTO dw_fact (gid, rid, did, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
-            values = (str(reservation["gid"]), str(reservation["rid"]), dwCursor.lastrowid, str(guest["points_earned"]), reserve_id)
+            values = (str(reservation["gid"]), str(reservation["rid"]), dwCursor.lastrowid, str(reservation["amount_spent"]), reserve_id)
             dwCursor.execute(sql, values)
             dwConnection.commit()
         except mysql.connector.Error as e:
@@ -190,6 +192,266 @@ def updateData():
         # break
 
     return render_template("home.html")
+
+@app.route("/add1")
+def add1():
+    sdb1Cursor.execute("SELECT * FROM guest")
+    guestsData = sdb1Cursor.fetchall()
+    guests = [guest[0] for guest in guestsData]
+    # print guests
+
+    sdb1Cursor.execute("SELECT * FROM restaurant")
+    restaurantsData = sdb1Cursor.fetchall()
+    restaurants = [restaurant[0] for restaurant in restaurantsData]
+    # print guests
+
+    return render_template("add1.html", guests=guests, restaurants=restaurants)
+
+@app.route("/add2")
+def add2():
+    guestsData = sdb2["guest"].find({})
+    guests = [str(guest["_id"]) for guest in guestsData]
+    # print guests
+
+    restaurantsData = sdb2["restaurant"].find({})
+    restaurants = [str(restaurant["_id"]) for restaurant in restaurantsData]
+    # print restaurants
+
+    return render_template("add2.html", guests=guests, restaurants=restaurants)
+
+@app.route("/sdb1_add_guest")
+def sdb1_add_guest():
+    print request.args.get('name'), request.args.get('phone_number')
+    try:
+        name = request.args.get('name')
+        phone = request.args.get('phone_number')
+        sql = "INSERT INTO guest (name, phone, points) VALUES (%s, %s, %s)"
+        data = (name, phone, 0)
+        sdb1Cursor.execute(sql, data)
+        mysqlConnection.commit()
+
+        sql = "INSERT INTO DIM_GUEST (gid, name, phone) VALUES(%s, %s, %s)"
+        values = (sdb1Cursor.lastrowid, name, phone)
+        dwCursor.execute(sql, values)
+        dwConnection.commit()
+
+        return "true"
+    except mysql.connector.Error as e:
+        print("dim_guest1 issue " + str(e))
+        return "false"
+
+@app.route("/sdb1_add_restaurant")
+def sdb1_add_restaurant():
+    print request.args.get('name'), request.args.get('region'), request.args.get('genre')
+    try:
+        name = request.args.get('name')
+        region = request.args.get('region')
+        genre = request.args.get('genre')
+        sql = "INSERT INTO restaurant (genre, region, name) VALUES (%s, %s, %s)"
+        data = (genre, region, name)
+        sdb1Cursor.execute(sql, data)
+        mysqlConnection.commit()
+
+        sql = "INSERT INTO DIM_RESTAURANT (rid, genre, region, name) VALUES(%s, %s, %s, %s)"
+        values = (sdb1Cursor.lastrowid, genre, region, name)
+        dwCursor.execute(sql, values)
+        dwConnection.commit()
+
+        return "true"
+    except mysql.connector.Error as e:
+        print("dim_restaurant1 issue " + str(e))
+        return "false"
+
+@app.route("/sdb1_add_reservation")
+def sdb1_add_reservation():
+    print request.args.get('guest_count'), request.args.get('amt_spent'), request.args.get('gid'), request.args.get('rid'), request.args.get('date')
+    try:
+
+        guest_count = request.args.get('guest_count')
+        amt_spent = request.args.get('amt_spent')
+        gid = request.args.get('gid')
+        rid = request.args.get('rid')
+        date = request.args.get('date')
+
+        sql = "SELECT * from guest where gid = " + gid
+        sdb1Cursor.execute(sql)
+        data = sdb1Cursor.fetchall()
+        # print data
+        points = data[0][3]
+        # print points, amt_spent
+        points += int(amt_spent)
+
+        sql = "UPDATE guest SET points = " + str(points)
+        sdb1Cursor.execute(sql)
+        mysqlConnection.commit()
+
+        data = (gid, rid, amt_spent, datetime.strptime(date, '%b %d, %Y'), guest_count)
+        sql = "INSERT INTO reservations (gid, rid, amt_spent, date, guest_count) VALUES (%s, %s, %s, %s, %s)"
+        sdb1Cursor.execute(sql, data)
+        mysqlConnection.commit()
+
+        try:
+            sql = "INSERT INTO DIM_RESERVATION (guest_count, amount_spent) VALUES(%s, %s)"
+            values = (guest_count, amt_spent)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+            reserve_id = dwCursor.lastrowid
+        except mysql.connector.Error as e:
+            print("dim_reservation1 issue " + str(e))
+            pass
+
+        try:
+            q = ""
+            month = datetime.strptime(date, '%b %d, %Y').month
+            if month >= 1 and month <= 3:
+                q = "Quarter 1"
+            elif month >= 4 and month <= 6:
+                q = "Quarter 2"
+            elif month >= 7 and month <= 9:
+                q = "Quarter 3"
+            else:
+                q = "Quarter 4"
+            sql = "INSERT INTO DIM_DATE (date, month, year, weekday, quarter) VALUES (%s, %s, %s, %s, %s)"
+            values = (datetime.strptime(date, '%b %d, %Y').day, datetime.strptime(date, '%b %d, %Y').month, datetime.strptime(date, '%b %d, %Y').year, weekdays[datetime.strptime(date, '%b %d, %Y').weekday()], q)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+        except mysql.connector.Error as e:
+            print("dw_fact1 issue " + str(e))
+            pass
+
+        try:
+            sql = "INSERT INTO dw_fact (gid, rid, did, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
+            values = (gid, rid, dwCursor.lastrowid, amt_spent, reserve_id)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+        except mysql.connector.Error as e:
+            print("dw_fact1 issue " + str(e))
+            pass
+
+        return "true"
+    except mysql.connector.Error as e:
+        print("dim_reservation1 issue " + str(e))
+        return "false"
+
+@app.route("/sdb2_add_guest")
+def sdb2_add_guest():
+    print request.args.get('name'), request.args.get('phone_number')
+
+    try:
+        name = request.args.get('name')
+        phone = request.args.get('phone_number')
+        guestCollection = sdb2["guest"]
+        guest = guestCollection.insert({
+            'name': name,
+            'phone_number': phone,
+            'points_earned': 0
+        })
+
+        sql = "INSERT INTO DIM_GUEST (gid, name, phone) VALUES(%s, %s, %s)"
+        values = (str(guest), name, phone)
+        dwCursor.execute(sql, values)
+        dwConnection.commit()
+
+        return "true"
+    except Exception as e:
+        print("dim_guest2 issue " + str(e))
+        return "false"
+
+@app.route("/sdb2_add_restaurant")
+def sdb2_add_restaurant():
+    print request.args.get('name'), request.args.get('region'), request.args.get('genre')
+    try:
+        name = request.args.get('name')
+        region = request.args.get('region')
+        genre = request.args.get('genre')
+        restaurantCollection = sdb2["restaurant"]
+        restaurant = restaurantCollection.insert({
+            "genre": genre,
+            "region": region,
+            "name": name
+        })
+
+        sql = "INSERT INTO DIM_RESTAURANT (rid, genre, region, name) VALUES(%s, %s, %s, %s)"
+        values = (str(restaurant), genre, region, name)
+        dwCursor.execute(sql, values)
+        dwConnection.commit()
+
+        return "true"
+    except mysql.connector.Error as e:
+        print("dim_restaurant1 issue " + str(e))
+        return "false"
+
+@app.route("/sdb2_add_reservation")
+def sdb2_add_reservation():
+    print request.args.get('guest_count'), request.args.get('amt_spent'), request.args.get('gid'), request.args.get('rid'), request.args.get('date')
+    try:
+
+        guest_count = request.args.get('guest_count')
+        amt_spent = request.args.get('amt_spent')
+        gid = request.args.get('gid')
+        rid = request.args.get('rid')
+        date = request.args.get('date')
+
+        guestCollection = sdb2["guest"]
+        cursor = guestCollection.find({"_id": ObjectId(gid)})
+
+        for guest in cursor:
+            # print guest
+            guestCollection.update_one({"_id": ObjectId(gid)},
+                                       {"$set": {"points_earned": str(int(amt_spent) + int(guest["points_earned"]))}})
+            break
+
+        reservationCollection = sdb2["reservation"]
+        reservation = reservationCollection.insert({
+            "gid": gid,
+            "rid": rid,
+            "amount_spent": amt_spent,
+            "transaction_date": datetime.strptime(date, '%b %d, %Y'),
+            "guest_count": guest_count
+        })
+
+        try:
+            sql = "INSERT INTO DIM_RESERVATION (guest_count, amount_spent) VALUES(%s, %s)"
+            values = (guest_count, amt_spent)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+            reserve_id = dwCursor.lastrowid
+        except mysql.connector.Error as e:
+            print("dim_reservation1 issue " + str(e))
+            return "false"
+
+        try:
+            q = ""
+            month = datetime.strptime(date, '%b %d, %Y').month
+            if month >= 1 and month <= 3:
+                q = "Quarter 1"
+            elif month >= 4 and month <= 6:
+                q = "Quarter 2"
+            elif month >= 7 and month <= 9:
+                q = "Quarter 3"
+            else:
+                q = "Quarter 4"
+            sql = "INSERT INTO DIM_DATE (date, month, year, weekday, quarter) VALUES (%s, %s, %s, %s, %s)"
+            values = (datetime.strptime(date, '%b %d, %Y').day, datetime.strptime(date, '%b %d, %Y').month, datetime.strptime(date, '%b %d, %Y').year, weekdays[datetime.strptime(date, '%b %d, %Y').weekday()], q)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+        except mysql.connector.Error as e:
+            print("dw_fact1 issue " + str(e))
+            return "false"
+
+        try:
+            sql = "INSERT INTO dw_fact (gid, rid, did, points, reserve_id) VALUES(%s, %s, %s, %s, %s)"
+            values = (str(gid), str(rid), dwCursor.lastrowid, amt_spent, reserve_id)
+            dwCursor.execute(sql, values)
+            dwConnection.commit()
+        except mysql.connector.Error as e:
+            print("dw_fact1 issue " + str(e))
+            return "false"
+
+        return "true"
+    except mysql.connector.Error as e:
+        print("dim_reservation1 issue " + str(e))
+        return "false"
 
 @app.route("/about")
 def about():
@@ -285,8 +547,76 @@ def query_five():
         print 'Error:', e
         return e.message
 
-@app.route("/execute")
-def execute():
+@app.route("/sdb1_execute")
+def sdb1_execute():
+    query = request.args.get('query')
+    print(query)
+    try:
+        sdb1Cursor.execute(query)
+    except mysql.connector.Error as e:
+        print("dw_fact2 issue " + str(e))
+        return "Invalid query", 500
+
+    cursorData = sdb1Cursor.fetchall()
+    # print(len(cursorData))
+    data = []
+    for d in cursorData:
+        if "guest" in query:
+            if "*" in query:
+                data.append({
+                    "gid": d[0],
+                    "name": d[1],
+                    "phone": d[2],
+                    "points": d[3]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
+
+        elif "restaurant" in query:
+            if "*" in query:
+                data.append({
+                    "rid": d[0],
+                    "genre": d[1],
+                    "region": d[2],
+                    "name": d[3]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
+
+        elif "reservation" in query:
+            if "*" in query:
+                data.append({
+                    "gid": d[0],
+                    "rid": d[1],
+                    "amt_spent": d[2],
+                    "date": d[3].strftime('%b %d, %Y'),
+                    "guest_count": d[4]
+                })
+            else:
+                params = query.split(" ")[1]
+                params = params.split(",")
+                res = {}
+
+                for i in range(len(params)):
+                    res[params[i]] = d[i]
+                data.append(res)
+
+    return json.dumps(data)
+
+@app.route("/dw_execute")
+def dw_execute():
     query = request.args.get('query')
     print(query)
     try:
@@ -313,7 +643,7 @@ def execute():
                 res = {}
 
                 for i in range(len(params)):
-                    res[params[i]] = d[i]
+                    res[params[i]] = str(d[i])
                 data.append(res)
 
         elif "dim_guest" in query:
